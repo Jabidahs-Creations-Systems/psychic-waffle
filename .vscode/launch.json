@@ -1,0 +1,83 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug TruffleHog",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}",
+      "args": [
+        "git",
+        "file://.",
+        "--json",
+        "--log-level=2"
+      ],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "CGO_ENABLED": "0"
+      }
+    },
+    {
+      "name": "Debug TruffleHog with Custom Args",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "CGO_ENABLED": "0"
+      }
+    },
+    {
+      "name": "Debug Current Test",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${file}",
+      "env": {
+        "CGO_ENABLED": "0"
+      }
+    },
+    {
+      "name": "Debug Test Package",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${fileDirname}",
+      "env": {
+        "CGO_ENABLED": "0"
+      }
+    },
+    {
+      "name": "Debug Integration Tests",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${fileDirname}",
+      "buildFlags": "-tags=integration",
+      "env": {
+        "CGO_ENABLED": "0"
+      }
+    },
+    {
+      "name": "Debug Detector Tests",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${fileDirname}",
+      "buildFlags": "-tags=detectors",
+      "env": {
+        "CGO_ENABLED": "0"
+      }
+    },
+    {
+      "name": "Attach to Process",
+      "type": "go",
+      "request": "attach",
+      "mode": "local",
+      "processId": 0
+    }
+  ]
+}
