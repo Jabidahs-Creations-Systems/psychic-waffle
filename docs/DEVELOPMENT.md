@@ -14,20 +14,20 @@ This guide explains how to set up your development environment and use the debug
 
 Before you begin, ensure you have the following installed:
 
-- **Go** (version 1.19 or later)
-- **VSCode** (Visual Studio Code)
-- **Go extension for VSCode** (`golang.go`)
+- **Go** (version 1.24.0 or later)
+- **VS Code** (Visual Studio Code)
+- **Go extension for VS Code** (`golang.go`)
 - **golangci-lint** (for linting)
 - **make** (for running Makefile targets)
 
 ### Installing Go Extension
 
-1. Open VSCode
+1. Open VS Code
 2. Go to Extensions (Ctrl+Shift+X or Cmd+Shift+X)
 3. Search for "Go"
 4. Install the official Go extension by Go Team at Google
 
-## VSCode Setup
+## VS Code Setup
 
 The `.vscode` directory contains pre-configured files for debugging and running tasks:
 

@@ -9,6 +9,8 @@ on:
 permissions:
   pull-requests: read
   statuses: write
+  contents: read
+  members: read
 
 jobs:
   check-approval:
@@ -17,11 +19,23 @@ jobs:
     steps:
       - name: Check for Product Engineering Team Approval
         uses: actions/github-script@v7
+        env:
+          APPROVAL_ORG: trufflesecurity
+          APPROVAL_TEAM: product-eng
+          STATUS_CHECK_NAME: pr-approval-check
         with:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
+
+            // Check if pull_request payload exists
+            if (!context.payload.pull_request) {
+              core.setFailed('No pull request found in payload');
+              return;
+            }
+
             const pull_number = context.payload.pull_request.number;
+            const headSha = context.payload.pull_request.head.sha;
 
             console.log(`Checking approvals for PR #${pull_number}`);
 
@@ -43,18 +57,18 @@ jobs:
                 await github.rest.repos.createCommitStatus({
                   owner,
                   repo,
-                  sha: context.payload.pull_request.head.sha,
+                  sha: headSha,
                   state: 'failure',
-                  context: 'product-eng-approval',
+                  context: process.env.STATUS_CHECK_NAME,
                   description: 'No approvals found',
                 });
                 core.setFailed('No approvals found for this PR');
                 return;
               }
 
-              // Get child teams of @trufflesecurity/product-eng
-              const parentTeamSlug = 'product-eng';
-              const org = 'trufflesecurity';
+              // Get org and team from environment variables
+              const org = process.env.APPROVAL_ORG;
+              const parentTeamSlug = process.env.APPROVAL_TEAM;
 
               let childTeams = [];
               try {
@@ -65,7 +79,17 @@ jobs:
                 childTeams = teams;
                 console.log(`Found ${childTeams.length} child teams of ${parentTeamSlug}`);
               } catch (error) {
-                console.log(`Warning: Could not list child teams: ${error.message}`);
+                console.error(`Error: Could not list child teams: ${error.message}`);
+                await github.rest.repos.createCommitStatus({
+                  owner,
+                  repo,
+                  sha: headSha,
+                  state: 'failure',
+                  context: process.env.STATUS_CHECK_NAME,
+                  description: `Cannot verify team membership: ${error.message}`,
+                });
+                core.setFailed(`Cannot list child teams. This may be a permissions issue.`);
+                return;
               }
 
               // Check if any approver is an active member of product-eng or child teams
@@ -121,9 +145,9 @@ jobs:
                 await github.rest.repos.createCommitStatus({
                   owner,
                   repo,
-                  sha: context.payload.pull_request.head.sha,
+                  sha: headSha,
                   state: 'success',
-                  context: 'product-eng-approval',
+                  context: process.env.STATUS_CHECK_NAME,
                   description: 'Approved by product engineering team member',
                 });
                 console.log('✅ PR has required product engineering approval');
@@ -131,9 +155,9 @@ jobs:
                 await github.rest.repos.createCommitStatus({
                   owner,
                   repo,
-                  sha: context.payload.pull_request.head.sha,
+                  sha: headSha,
                   state: 'failure',
-                  context: 'product-eng-approval',
+                  context: process.env.STATUS_CHECK_NAME,
                   description: 'No approval from product engineering team',
                 });
                 core.setFailed('No approval from an active member of product engineering team');
@@ -144,9 +168,9 @@ jobs:
               await github.rest.repos.createCommitStatus({
                 owner,
                 repo,
-                sha: context.payload.pull_request.head.sha,
+                sha: headSha,
                 state: 'failure',
-                context: 'product-eng-approval',
+                context: process.env.STATUS_CHECK_NAME,
                 description: `Error checking approvals: ${error.message}`,
               });
               core.setFailed(`Error checking approvals: ${error.message}`);

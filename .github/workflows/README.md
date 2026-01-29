@@ -21,7 +21,7 @@ This workflow enforces that at least one PR approver must be an **active** membe
      - Any of its child teams
    - Sets a commit status accordingly
 
-3. **Status Check**: Creates a commit status named `product-eng-approval` with:
+3. **Status Check**: Creates a commit status named `pr-approval-check` with:
    - ✅ **Success**: When at least one approver is an active member of `@trufflesecurity/product-eng` or any child team
    - ❌ **Failure**: When there are no approvals or there are approvals but none from active `@trufflesecurity/product-eng` members
 
@@ -38,11 +38,22 @@ To make this check required:
 3. Enable "Require status checks to pass before merging"
 4. Add `pr-approval-check` to the required status checks
 
+### Configuration
+
+The workflow can be customized by modifying the environment variables in the workflow file:
+
+- `APPROVAL_ORG`: The GitHub organization name (default: `trufflesecurity`)
+- `APPROVAL_TEAM`: The team slug to check for approvals (default: `product-eng`)
+- `STATUS_CHECK_NAME`: The name of the status check (default: `pr-approval-check`)
+
+To customize for your repository, edit the `env` section in `.github/workflows/pr-approval-check.yml`.
+
 ### Permissions
 
-The workflow uses the default `GITHUB_TOKEN` which has sufficient permissions to:
-- Read PR reviews
-- List child teams and check team membership (for public teams)
-- Create commit statuses
+The workflow uses the default `GITHUB_TOKEN` which requires the following permissions:
+- Read PR reviews (`pull-requests: read`)
+- List child teams and check team membership (`members: read`)
+- Read repository contents (`contents: read`)
+- Create commit statuses (`statuses: write`)
 
-**Note**: If the `product-eng` team or its child teams are private, you may need to use a personal access token with appropriate permissions. The Github API returns 404 for non-members and for lack of permissions.
+**Note**: If the `product-eng` team or its child teams are private, you may need to use a personal access token with appropriate permissions. The GitHub API returns 404 for non-members and for lack of permissions.
