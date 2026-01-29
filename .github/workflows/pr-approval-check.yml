@@ -1,0 +1,153 @@
+name: PR Approval Check
+
+on:
+  pull_request_review:
+    types: [submitted]
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  pull-requests: read
+  statuses: write
+
+jobs:
+  check-approval:
+    name: Check Product Engineering Approval
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for Product Engineering Team Approval
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pull_number = context.payload.pull_request.number;
+
+            console.log(`Checking approvals for PR #${pull_number}`);
+
+            try {
+              // Get all reviews for the PR
+              const { data: reviews } = await github.rest.pulls.listReviews({
+                owner,
+                repo,
+                pull_number,
+              });
+
+              console.log(`Found ${reviews.length} total reviews`);
+
+              // Filter for approved reviews
+              const approvals = reviews.filter(review => review.state === 'APPROVED');
+              console.log(`Found ${approvals.length} approvals`);
+
+              if (approvals.length === 0) {
+                await github.rest.repos.createCommitStatus({
+                  owner,
+                  repo,
+                  sha: context.payload.pull_request.head.sha,
+                  state: 'failure',
+                  context: 'product-eng-approval',
+                  description: 'No approvals found',
+                });
+                core.setFailed('No approvals found for this PR');
+                return;
+              }
+
+              // Get child teams of @trufflesecurity/product-eng
+              const parentTeamSlug = 'product-eng';
+              const org = 'trufflesecurity';
+
+              let childTeams = [];
+              try {
+                const { data: teams } = await github.rest.teams.listChildInOrg({
+                  org,
+                  team_slug: parentTeamSlug,
+                });
+                childTeams = teams;
+                console.log(`Found ${childTeams.length} child teams of ${parentTeamSlug}`);
+              } catch (error) {
+                console.log(`Warning: Could not list child teams: ${error.message}`);
+              }
+
+              // Check if any approver is an active member of product-eng or child teams
+              let hasProductEngApproval = false;
+
+              for (const approval of approvals) {
+                const username = approval.user.login;
+                console.log(`Checking approval from: ${username}`);
+
+                // Check parent team membership
+                try {
+                  const { data: membership } = await github.rest.teams.getMembershipForUserInOrg({
+                    org,
+                    team_slug: parentTeamSlug,
+                    username,
+                  });
+
+                  if (membership.state === 'active') {
+                    console.log(`✅ ${username} is an active member of ${org}/${parentTeamSlug}`);
+                    hasProductEngApproval = true;
+                    break;
+                  }
+                } catch (error) {
+                  console.log(`${username} is not a member of ${org}/${parentTeamSlug}`);
+                }
+
+                // Check child team memberships
+                for (const childTeam of childTeams) {
+                  try {
+                    const { data: membership } = await github.rest.teams.getMembershipForUserInOrg({
+                      org,
+                      team_slug: childTeam.slug,
+                      username,
+                    });
+
+                    if (membership.state === 'active') {
+                      console.log(`✅ ${username} is an active member of ${org}/${childTeam.slug}`);
+                      hasProductEngApproval = true;
+                      break;
+                    }
+                  } catch (error) {
+                    // Not a member of this child team, continue checking
+                  }
+                }
+
+                if (hasProductEngApproval) {
+                  break;
+                }
+              }
+
+              // Set commit status based on result
+              if (hasProductEngApproval) {
+                await github.rest.repos.createCommitStatus({
+                  owner,
+                  repo,
+                  sha: context.payload.pull_request.head.sha,
+                  state: 'success',
+                  context: 'product-eng-approval',
+                  description: 'Approved by product engineering team member',
+                });
+                console.log('✅ PR has required product engineering approval');
+              } else {
+                await github.rest.repos.createCommitStatus({
+                  owner,
+                  repo,
+                  sha: context.payload.pull_request.head.sha,
+                  state: 'failure',
+                  context: 'product-eng-approval',
+                  description: 'No approval from product engineering team',
+                });
+                core.setFailed('No approval from an active member of product engineering team');
+              }
+
+            } catch (error) {
+              console.error(`Error: ${error.message}`);
+              await github.rest.repos.createCommitStatus({
+                owner,
+                repo,
+                sha: context.payload.pull_request.head.sha,
+                state: 'failure',
+                context: 'product-eng-approval',
+                description: `Error checking approvals: ${error.message}`,
+              });
+              core.setFailed(`Error checking approvals: ${error.message}`);
+            }

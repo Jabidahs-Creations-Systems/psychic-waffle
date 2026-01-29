@@ -1,0 +1,125 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "CGO_ENABLED=0 go build -o trufflehog .",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$go"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "test",
+      "type": "shell",
+      "command": "make test",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": ["$go"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "test-race",
+      "type": "shell",
+      "command": "make test-race",
+      "group": "test",
+      "problemMatcher": ["$go"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "test-integration",
+      "type": "shell",
+      "command": "make test-integration",
+      "group": "test",
+      "problemMatcher": ["$go"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "test-detectors",
+      "type": "shell",
+      "command": "make test-detectors",
+      "group": "test",
+      "problemMatcher": ["$go"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "lint",
+      "type": "shell",
+      "command": "make lint",
+      "problemMatcher": ["$go"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "check",
+      "type": "shell",
+      "command": "make check",
+      "problemMatcher": ["$go"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "dogfood",
+      "type": "shell",
+      "command": "make dogfood",
+      "problemMatcher": ["$go"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "install",
+      "type": "shell",
+      "command": "make install",
+      "problemMatcher": ["$go"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "run",
+      "type": "shell",
+      "command": "make run",
+      "problemMatcher": ["$go"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "clean",
+      "type": "shell",
+      "command": "rm -f trufflehog",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    }
+  ]
+}

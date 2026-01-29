@@ -9,4 +9,8 @@ tmp/go-test.json
 .captain/detectors/timings.yaml
 .captain/detectors/quarantines.yaml
 .captain/detectors/flakes.yaml
-.vscode
+# VSCode - ignore user-specific settings but keep debug/task configs
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/settings.json

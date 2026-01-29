@@ -1,0 +1,30 @@
+{
+  "go.useLanguageServer": true,
+  "go.buildOnSave": "off",
+  "go.lintOnSave": "off",
+  "go.vetOnSave": "off",
+  "go.formatTool": "gofmt",
+  "go.lintTool": "golangci-lint",
+  "go.testFlags": ["-v", "-timeout=5m"],
+  "go.coverOnSave": false,
+  "go.coverOnSingleTest": true,
+  "go.coverOnTestPackage": true,
+  "go.buildTags": "",
+  "go.testTimeout": "5m",
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/vendor": true
+  },
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/vendor/**": true
+  }
+}
